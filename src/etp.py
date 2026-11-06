@@ -34,7 +34,10 @@ NAME_RE = re.compile(rb"^[A-Za-z0-9_-][A-Za-z0-9._-]{0,63}\Z")
 def encode(mtype, payload=b"", status=0):
     """Return the bytes of one complete ETP message: header + payload."""
     # TODO: pack the header with HEADER.pack(...) and append the payload.
-    raise NotImplementedError
+    payload = bytes(payload)
+    if len(payload) > MAX_LEN:
+        raise ValueError(f"Payload exceeds MAX_LEN")
+    return HEADER.pack(VERSION, mtype, status, 0, len(payload)) + payload
 
 
 def read_message(conn, transport):
