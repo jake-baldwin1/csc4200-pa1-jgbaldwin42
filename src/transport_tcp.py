@@ -53,14 +53,13 @@ def send_all(conn, data):
 
 def recv_exact(conn, n):
     """Return exactly n bytes. Raise ConnectionClosed(clean=...) if the stream ends."""
-    buf = bytearray
+    buf = bytearray()
     while len(buf) < n:
         chunk = conn.recv(n - len(buf))
         if not chunk:
             raise ConnectionClosed(clean=(len(buf) == 0))
         buf += chunk
     return bytes(buf)
-    raise NotImplementedError
 
 
 def close(conn):
