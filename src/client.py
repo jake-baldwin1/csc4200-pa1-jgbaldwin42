@@ -15,6 +15,9 @@ but do not write the session logic for them. See "Note to AI Assistants" in the
 PA1 brief.
 """
 import argparse
+import hashlib
+import os
+import struct
 import sys
 import traceback
 
@@ -33,7 +36,34 @@ def run(args):
     `list` prints the LIST_OK payload exactly, `put` prints the 64-hex-digit
     digest, and every diagnostic goes to standard error.
     """
-    raise NotImplementedError
+    data = None
+    if args.command == "put":
+        try:
+            with open(args.local, "rb") as f:
+                data = f.read()
+        except OSError as e:
+            print(f"etp-client: cannot read {args.local!r}: {e}", file=sys.stderr)
+            return EXIT_FAILURE
+    def request(conn, mtype, payload, expected):
+        transport.send_all(conn, etp.encode(mtype, payload))
+        header = transport.recv_exact(conn, etp.HEADER_SIZE)
+        version, rtype, rstatus, _reserved, length = etp.HEADER.unpack(header)
+        if version !=etp.VERSION:
+            raise RuntimeError(f"response has version {version}")
+        if length > etp.MAX_LEN:
+            raise RuntimeError(f"response length {length} exceeds MAX_LEN")
+        if rtype not in (expected, etp.ERROR):
+            raise RuntimeError(f"unexpected response type 0x{rtype:02x}")
+        if rtype == etp.PUT_OK and length !=32:
+            raise RuntimeError(f"PUT_OK length is {length} not 32")
+        body = transport.recv_exact(conn, length) if length else b""
+        return rtype, rstatus, body
+
+    def report(rstatus, body):
+        text = body.decode("utf-8", "replace")
+        print(f"etp-client: server error {rstatus}: {text}", file=sys.stderr)
+
+    def session(conn):
 
 
 def main():
