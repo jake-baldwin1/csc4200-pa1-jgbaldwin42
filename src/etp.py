@@ -48,7 +48,12 @@ def read_message(conn, transport):
     the payload, and why?
     """
     # TODO
-    raise NotImplementedError
+    header = transport.recv_exact(conn, HEADER_SIZE)
+    version, mtype, status, _reserved, length = HEADER.unpack(header)
+    if version != VERSION or length > MAX_LEN:
+        return version, mtype, status, length, None
+    payload = transport.recv_exact(conn, length) if length else b""
+    return version, mtype, status, length, payload
 
 
 def valid_name(name_bytes):
