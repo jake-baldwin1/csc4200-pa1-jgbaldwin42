@@ -5,41 +5,45 @@ should be true of the code you submit. Delete these italic prompts when you writ
 
 ## 1. Architecture
 
-_Your modules and what calls what. A small diagram (ASCII is fine) or a list:
-which file holds the protocol (encode/decode), which holds the transport, which
-holds the server's session logic, which holds the client._
+client.py -> etp.py, transport.py
+server.py -> transport.py
+transport.py -> transport_tcp.py
+
+etp.py has the header struct, constants, and the encode/read_message functions.
+client.py runs connect, hello, bye
+transport_tcp has the socket calls exported through transport.py
+server.py has the accept loop
 
 ## 2. The transport seam
 
-_Which file is your transport? List the six operations as you implemented them.
-Confirm that no other file calls the socket API. In two or three sentences: what
-would you have to change, and what would stay the same, when you swap TCP for your
-PA2 transport in the final project?_
+The transport file is transport_tcp.py. The functions are listen, accept, connect, send_all, recv_exact, and close
+When the PA2 transport is swapped in, we would have to adjust the makefile but as long as it has the same functions everything else should be fine.
 
 ## 3. Framing
 
-_How does your code read one ETP message from a byte stream? Where and how do you
-handle a header that arrives in pieces, or two messages that arrive in one read?
-Where do you check VERSION and LENGTH, and why before reading the payload?_
+read_message calls recv_exact to read the byte stream. 
+recv loops until it has the entire message. 
+A header that arrives in pieces would just be reassembled.
+When two messages arrive, the extra bytes stay in the buffer until they are consumed.
+read_message checks version and length before reading the payload to prevent blocking.
 
 ## 4. Concurrency
 
-_Threads, processes or an event loop? What happens to everyone else when one
-client stalls half-way through a header? Is any state shared between sessions
-(for example, two clients PUT and GET the same file at once), and how is it
-protected?_
+If one client stalls half way through a header it should only block its own thread because each connection should only have one thread.
+Put writes to a temporary file so doing a get at the same time should not affect anything negatively.
 
 ## 5. Errors and disconnects
 
-_How do fatal and non-fatal errors differ in your code? What happens when a client
-disconnects in the middle of a GET of a large file? (C: how did you deal with
-SIGPIPE?) How does your client choose its exit code?_
+Fatal: the error is sent and the session is ended.
+Non-fatal: session continues in the same state because the payload was already consumed.
+If a client dsconnects during a large get, only that session should be closed.
+The client only writes if the whole session succeeds so there should be no partial output.
 
 ## 6. Threat model
 
-_One paragraph. Who could attack an ETP/1 server, and how? Name one attack your
-server resists (and how), and one it does not. Chapter 5 §5.9 and the
-specification's Security Considerations are good starting points._
+Traffic is unencrypted and unauthenticated, anyone on the network can read and modify files, any client could overwrite any file.
+The server resists path traversal because names and length are checked.
+The server does not resist resource exhaustion, a put could hold a large amount of memory and there is no max on the number of connections. 
 
 ## 7. Testing
 
