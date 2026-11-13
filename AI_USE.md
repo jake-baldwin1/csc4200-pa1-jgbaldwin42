@@ -8,15 +8,14 @@ answer only if it is true._
 ## 1. Did you use generative AI on this assignment?
 
 - [ ] No. I did not use any generative AI tool for any part of PA1.
-- [ ] Yes, as described below.
+- [X] Yes, as described below.
 
 ## 2. Statement (the syllabus form)
 
-> The author acknowledges the utilization of _[tool name]_, a language model
-> developed by _[provider]_, in the preparation of this assignment. _[Tool name]_
-> was employed in the following manner(s) within this assignment: _[for example:
-> explaining socket errors; reviewing my framing code; drafting the Makefile;
-> suggesting test cases; editing DESIGN.md for clarity]_.
+> The author acknowledges the utilization of Claude Opus 5.5, a language model
+> developed by Anthropic, in the preparation of this assignment. Claude
+> was employed in the following manner(s) within this assignment: finding libraries,
+> refining the structure of server.py, reviewing the code, help with run()
 
 ## 3. Log
 
@@ -25,13 +24,15 @@ whole conversations, but keep them in case you are asked._
 
 | # | What I asked (summary) | What I used from the answer | What I changed or rejected | How I checked it was right |
 |---|---|---|---|---|
-| 1 | | | | |
-| 2 | | | | |
+| 1 |What libraries should I be using |I used most of the libraries that it gave me |I did not use the struct library |I looked Googled the libraries to see what they are about |
+| 2 |How should I structure server.py? Should I use any additional helper functions? |I did not use helpers I just used the format that was given |I did not reject the recommendations made |It made sense to structure it this way |
 
 ## 4. Where AI-produced material remains
 
 _List each file and function (or document section) that still contains code or
 text an AI tool generated, even after you edited it. If none, say none._
+
+server.py: handle_session(), main(). client.py: run()
 
 ## 5. One thing the AI got wrong — or how you checked it
 
@@ -40,3 +41,5 @@ did not fit the specification, and how you caught it. If you found nothing wrong
 say so and describe how you checked (a test you ran, the part of the
 specification you compared it with). If you did not use AI, describe one thing
 you got wrong yourself and how you caught it._
+
+The AI told me that I need the struct library, but it was not necessary. You can read the 2 byte payload in the PUT without it. 

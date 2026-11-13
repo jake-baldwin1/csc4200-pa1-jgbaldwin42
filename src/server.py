@@ -17,7 +17,6 @@ import os
 import sys
 import threading
 import hashlib
-import struct
 import stat
 import tempfile
 from datetime import datetime
@@ -37,17 +36,17 @@ def handle_session(conn, peer, root):
     """
 
     broot = os.fsencode(root)
-    ready = False                    # False = AWAIT_HELLO, True = READY
+    ready = False     
     try:
         while True:
             try:
                 version, mtype, _status, length, payload = etp.read_message(conn, transport)
             except transport.ConnectionClosed:
-                break                # Section 5.5: no BYE; abandon, send nothing
+                break              
  
             rtype, status, body, text, end = etp.ERROR, 0, b"", "", False
  
-            # Section 8.1, checks in order; stop at the first problem.
+            # Checks 
             if version != etp.VERSION:
                 status, text, end = etp.BAD_VERSION, "unsupported version", True
             elif length > etp.MAX_LEN:
@@ -56,16 +55,18 @@ def handle_session(conn, peer, root):
                 status, text = etp.BAD_TYPE, "not a request type"
             elif not ready and mtype != etp.HELLO:
                 status, text, end = etp.NOT_READY, "HELLO must come first", True
- 
-            elif mtype == etp.HELLO:                                    # Section 6.1
+
+            # HELLO
+            elif mtype == etp.HELLO:                                
                 if ready:
                     status, text = etp.BAD_REQUEST, "duplicate HELLO"
                 elif not (1 <= len(payload) <= 32 and all(0x21 <= b <= 0x7E for b in payload)):
                     status, text = etp.BAD_REQUEST, "invalid client name"
                 else:
                     rtype, body, ready = etp.HELLO_OK, b"ETP server 1.0", True
- 
-            elif mtype == etp.LIST:                                     # Section 6.2
+
+            # LIST
+            elif mtype == etp.LIST:                                    
                 if payload:
                     status, text = etp.BAD_REQUEST, "LIST takes an empty payload"
                 else:
@@ -75,7 +76,7 @@ def handle_session(conn, peer, root):
                             for e in it:
                                 if etp.valid_name(e.name) and e.is_file(follow_symlinks=False):
                                     entries.append((e.name, e.stat(follow_symlinks=False).st_size))
-                        entries.sort()                                  # ascending byte order
+                        entries.sort()                            
                         listing = b"".join(n + b"\t" + str(s).encode() + b"\n" for n, s in entries)
                         if len(listing) > etp.MAX_LEN:
                             status, text = etp.SERVER_ERROR, "listing too large"
@@ -83,14 +84,15 @@ def handle_session(conn, peer, root):
                             rtype, body = etp.LIST_OK, listing
                     except OSError:
                         status, text = etp.SERVER_ERROR, "cannot read the root directory"
- 
-            elif mtype == etp.GET:                                      # Section 6.3
+
+            # GET
+            elif mtype == etp.GET:                                    
                 if not etp.valid_name(payload):
                     status, text = etp.BAD_NAME, "invalid file name"
                 else:
                     path = os.path.join(broot, payload)
                     try:
-                        st = os.lstat(path)                             # a symlink is not a regular file
+                        st = os.lstat(path)                           
                     except OSError:
                         st = None
                     if st is None or not stat.S_ISREG(st.st_mode):
@@ -107,8 +109,9 @@ def handle_session(conn, peer, root):
                                 rtype, body = etp.GET_OK, data
                         except OSError:
                             status, text = etp.SERVER_ERROR, "cannot read file"
- 
-            elif mtype == etp.PUT:                                      # Section 6.4
+
+            # PUT
+            elif mtype == etp.PUT:                                   
                 namelen = int.from_bytes(payload[:2], "big") if len(payload) >= 2 else 0
                 if len(payload) < 2 or namelen > len(payload) - 2:
                     status, text = etp.BAD_REQUEST, "malformed PUT payload"
@@ -142,18 +145,19 @@ def handle_session(conn, peer, root):
                                 os.unlink(tmp)
                             except OSError:
                                 pass
- 
-            else:                                                       # BYE, Section 6.5
+
+            # BYE
+            else:                                                      
                 if payload:
                     status, text = etp.BAD_REQUEST, "BYE takes an empty payload"
                 else:
                     rtype, end = etp.BYE_OK, True
  
             if rtype == etp.ERROR:
-                body = text.encode("utf-8")[:200]                       # Section 8.2
+                body = text.encode("utf-8")[:200]                    
             transport.send_all(conn, etp.encode(rtype, body, status))
  
-            # Section 9: time, address:port, request type, status sent, request LENGTH.
+            # Logging
             now = datetime.now()
             tname = {etp.HELLO: "HELLO", etp.LIST: "LIST", etp.GET: "GET",
                      etp.PUT: "PUT", etp.BYE: "BYE"}.get(mtype, f"0x{mtype:02X}")
@@ -165,7 +169,7 @@ def handle_session(conn, peer, root):
  
             if end:
                 break
-    except Exception as e:           # this session only; the server carries on
+    except Exception as e:         
         print(f"etp-server: session {peer}: {e!r}", file=sys.stderr)
     finally:
         try:
