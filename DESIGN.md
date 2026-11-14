@@ -47,5 +47,5 @@ The server does not resist resource exhaustion, a put could hold a large amount 
 
 ## 7. Testing
 
-_What did you test beyond `etp_selfcheck.py`? How? Name one bug your testing
-found, how you found it, and the fix._
+I had claude check our code before we ran it.
+It found a missing '()' after a bytearray function in recv_excact that would have caused it to not run correctly.
