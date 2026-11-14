@@ -1,8 +1,8 @@
 # PA1 — ETP/1 Client and Server
 
-**Student:** _your full name_ (`your-github-username`)
-**Course:** CSC 4200 / CSC 5200 (delete one) — Fall 2026
-**Language:** _C or Python_
+**Student:** Jake Baldwin, Isaac Brown  jake-baldwin1, IsaacBrown116
+**Course:** CSC 4200 — Fall 2026
+**Language:** _Python_
 **Submitted commit:** _the SHA you paste into Canvas_
 
 ## Build and run
@@ -22,6 +22,9 @@ _Be specific and honest. Paste the `Execution: N / 30 points` and `Build and
 repository: N / 10` lines from `make check`. List any test
 that fails and what you believe the cause is. Known limitations go here, not in a
 footnote. An honest "S16 fails because ..." earns more than silence._
+
+Client has no timeout.
+Transport is IPv4 only.
 
 ## Files
 
@@ -46,4 +49,5 @@ generative AI tool helped me produce. My use of AI tools is disclosed in full in
 `AI_USE.md`. The capture and measurements in `evidence/` come from my own programs,
 run by me.
 
-**Signed:** _full name_  **Date:** _date_
+**Signed:** Jake Baldwin  **Date:** 11/13/2026
+**Signed:**               **Date:** 
